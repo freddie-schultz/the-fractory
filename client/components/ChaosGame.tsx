@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Canvas from './Canvas'
+import { Point } from '../../models/canvas.ts'
 
 export default function ChaosGame() {
   const [showCanvas, setShowCanvas] = useState(false)
@@ -8,8 +9,11 @@ export default function ChaosGame() {
     setShowCanvas(!showCanvas)
   }
 
-  const handleDraw = (canvasContext: CanvasRenderingContext2D) => {
-    type Point = [number, number]
+  const drawChaosGame = (
+    canvasContext: CanvasRenderingContext2D,
+    numberOfPoints: number,
+  ) => {
+    if (numberOfPoints < 3) return
 
     const getRandomPoint = (): Point => {
       const x = Math.floor(Math.random() * 1000)
@@ -27,27 +31,41 @@ export default function ChaosGame() {
       canvasContext.fillRect(point[0], point[1], 1, 1)
     }
 
-    const point1 = [500, 100] as Point
-    const point2 = [100, 793] as Point
-    const point3 = [900, 793] as Point
+    const drawBigPoint = (point: Point) => {
+      canvasContext.fillRect(point[0] - 5, point[1] - 5, 10, 10)
+    }
+
+    const toRadians = (degrees: number) => {
+      return degrees * (Math.PI / 180)
+    }
+
+    const cornerPoints = []
+    const angleBetweenCorners = 360 / numberOfPoints
+    let currentAngle = angleBetweenCorners
+
+    for (let i = 0; i < numberOfPoints; i++) {
+      const newCornerPoint = [
+        Math.round(500 + 450 * Math.cos(toRadians(currentAngle))),
+        Math.round(500 + 450 * Math.sin(toRadians(currentAngle))),
+      ] as Point
+
+      cornerPoints.push(newCornerPoint)
+      drawBigPoint(newCornerPoint)
+      currentAngle += angleBetweenCorners
+    }
 
     let currentPoint = getRandomPoint()
 
-    for (let i = 0; i < 1000000; i++) {
+    for (let i = 0; i < 500000; i++) {
       drawPoint(currentPoint)
-      const rand = Math.floor(Math.random() * 3)
-      switch (rand) {
-        case 0:
-          currentPoint = halfwayToPoint(currentPoint, point1)
-          break
-        case 1:
-          currentPoint = halfwayToPoint(currentPoint, point2)
-          break
-        case 2:
-          currentPoint = halfwayToPoint(currentPoint, point3)
-          break
-      }
+      const rand = Math.floor(Math.random() * numberOfPoints)
+
+      currentPoint = halfwayToPoint(currentPoint, cornerPoints[rand])
     }
+  }
+
+  const handleDraw = (canvasContext: CanvasRenderingContext2D) => {
+    drawChaosGame(canvasContext, 3)
   }
 
   return (

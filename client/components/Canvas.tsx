@@ -24,6 +24,11 @@ export default function Canvas(props: Props) {
   }, [props])
 
   return (
-    <canvas ref={canvasRef} width={props.width} height={props.height}></canvas>
+    <canvas
+      style={{ border: '1px solid black' }}
+      ref={canvasRef}
+      width={props.width}
+      height={props.height}
+    ></canvas>
   )
 }
