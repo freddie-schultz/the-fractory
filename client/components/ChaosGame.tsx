@@ -2,6 +2,30 @@ import { useState } from 'react'
 import Canvas from './Canvas'
 import { Point } from '../../models/canvas.ts'
 
+const toRadians = (degrees: number) => {
+  return degrees * (Math.PI / 180)
+}
+
+const getRandomPoint = (): Point => {
+  const x = Math.floor(Math.random() * 1000)
+  const y = Math.floor(Math.random() * 1000)
+  return [x, y]
+}
+
+const percentDistanceBetweenPoints = (
+  pointA: Point,
+  pointB: Point,
+  percent: number,
+): Point => {
+  let newX = Math.abs(pointA[0] - pointB[0]) * percent
+  let newY = Math.abs(pointA[1] - pointB[1]) * percent
+
+  pointA[0] < pointB[0] ? (newX = pointA[0] + newX) : (newX = pointA[0] - newX)
+  pointA[1] < pointB[1] ? (newY = pointA[1] + newY) : (newY = pointA[1] - newY)
+
+  return [newX, newY]
+}
+
 export default function ChaosGame() {
   const [showCanvas, setShowCanvas] = useState(false)
 
@@ -15,18 +39,6 @@ export default function ChaosGame() {
   ) => {
     if (numberOfPoints < 3) return
 
-    const getRandomPoint = (): Point => {
-      const x = Math.floor(Math.random() * 1000)
-      const y = Math.floor(Math.random() * 1000)
-      return [x, y]
-    }
-
-    const halfwayToPoint = (currentPoint: Point, newPoint: Point): Point => {
-      const newX = (currentPoint[0] + newPoint[0]) / 2
-      const newY = (currentPoint[1] + newPoint[1]) / 2
-      return [newX, newY]
-    }
-
     const drawPoint = (point: Point) => {
       canvasContext.fillRect(point[0], point[1], 1, 1)
     }
@@ -35,13 +47,9 @@ export default function ChaosGame() {
       canvasContext.fillRect(point[0] - 5, point[1] - 5, 10, 10)
     }
 
-    const toRadians = (degrees: number) => {
-      return degrees * (Math.PI / 180)
-    }
-
     const cornerPoints = []
     const angleBetweenCorners = 360 / numberOfPoints
-    let currentAngle = angleBetweenCorners
+    let currentAngle = -90
 
     for (let i = 0; i < numberOfPoints; i++) {
       const newCornerPoint = [
@@ -50,17 +58,23 @@ export default function ChaosGame() {
       ] as Point
 
       cornerPoints.push(newCornerPoint)
-      drawBigPoint(newCornerPoint)
+      drawPoint(newCornerPoint)
       currentAngle += angleBetweenCorners
     }
 
     let currentPoint = getRandomPoint()
 
+    const percentTravelDistance = (numberOfPoints - 2) / (numberOfPoints - 1)
+
     for (let i = 0; i < 500000; i++) {
       drawPoint(currentPoint)
       const rand = Math.floor(Math.random() * numberOfPoints)
 
-      currentPoint = halfwayToPoint(currentPoint, cornerPoints[rand])
+      currentPoint = percentDistanceBetweenPoints(
+        currentPoint,
+        cornerPoints[rand],
+        percentTravelDistance,
+      )
     }
   }
 
