@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Canvas from './Canvas'
 import { Point } from '../../models/canvas.ts'
 
@@ -26,69 +26,83 @@ const percentDistanceBetweenPoints = (
   return [newX, newY]
 }
 
+const drawChaosGame = (
+  canvasContext: CanvasRenderingContext2D,
+  numberOfPoints: number,
+) => {
+  if (numberOfPoints < 3) return
+
+  const drawPoint = (point: Point) => {
+    canvasContext.fillRect(point[0], point[1], 1, 1)
+  }
+
+  const cornerPoints = []
+  const angleBetweenCorners = 360 / numberOfPoints
+  let currentAngle = -90
+
+  for (let i = 0; i < numberOfPoints; i++) {
+    const newCornerPoint = [
+      Math.round(500 + 450 * Math.cos(toRadians(currentAngle))),
+      Math.round(500 + 450 * Math.sin(toRadians(currentAngle))),
+    ] as Point
+
+    cornerPoints.push(newCornerPoint)
+    currentAngle += angleBetweenCorners
+  }
+
+  let currentPoint = getRandomPoint()
+
+  const percentTravelDistance = (numberOfPoints - 2) / (numberOfPoints - 1)
+
+  for (let i = 0; i < 500000; i++) {
+    drawPoint(currentPoint)
+    const rand = Math.floor(Math.random() * numberOfPoints)
+
+    currentPoint = percentDistanceBetweenPoints(
+      currentPoint,
+      cornerPoints[rand],
+      percentTravelDistance,
+    )
+  }
+}
+
 export default function ChaosGame() {
-  const [showCanvas, setShowCanvas] = useState(false)
-
-  const toggleShowCanvas = () => {
-    setShowCanvas(!showCanvas)
-  }
-
-  const drawChaosGame = (
-    canvasContext: CanvasRenderingContext2D,
-    numberOfPoints: number,
-  ) => {
-    if (numberOfPoints < 3) return
-
-    const drawPoint = (point: Point) => {
-      canvasContext.fillRect(point[0], point[1], 1, 1)
-    }
-
-    const drawBigPoint = (point: Point) => {
-      canvasContext.fillRect(point[0] - 5, point[1] - 5, 10, 10)
-    }
-
-    const cornerPoints = []
-    const angleBetweenCorners = 360 / numberOfPoints
-    let currentAngle = -90
-
-    for (let i = 0; i < numberOfPoints; i++) {
-      const newCornerPoint = [
-        Math.round(500 + 450 * Math.cos(toRadians(currentAngle))),
-        Math.round(500 + 450 * Math.sin(toRadians(currentAngle))),
-      ] as Point
-
-      cornerPoints.push(newCornerPoint)
-      drawPoint(newCornerPoint)
-      currentAngle += angleBetweenCorners
-    }
-
-    let currentPoint = getRandomPoint()
-
-    const percentTravelDistance = (numberOfPoints - 2) / (numberOfPoints - 1)
-
-    for (let i = 0; i < 500000; i++) {
-      drawPoint(currentPoint)
-      const rand = Math.floor(Math.random() * numberOfPoints)
-
-      currentPoint = percentDistanceBetweenPoints(
-        currentPoint,
-        cornerPoints[rand],
-        percentTravelDistance,
-      )
-    }
-  }
+  const [formState, setFormState] = useState<{ numberOfCorners: number }>({
+    numberOfCorners: 3,
+  })
 
   const handleDraw = (canvasContext: CanvasRenderingContext2D) => {
-    drawChaosGame(canvasContext, 3)
+    drawChaosGame(canvasContext, formState.numberOfCorners)
+  }
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormState({ ...formState, [event.target.id]: event.target.value })
+  }
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
   }
 
   return (
     <>
-      <div>
-        <button onClick={toggleShowCanvas}>Draw</button>
+      <div style={{ margin: '20px' }}>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="numberOfCorners">
+            Number of corners: {formState.numberOfCorners}
+          </label>
+          <input
+            id="numberOfCorners"
+            type="range"
+            min="3"
+            max="10"
+            value={formState.numberOfCorners}
+            onChange={handleChange}
+          />
+          <br />
+        </form>
       </div>
       <div>
-        {showCanvas && <Canvas draw={handleDraw} width={1000} height={1000} />}
+        <Canvas draw={handleDraw} width={1000} height={1000} />
       </div>
     </>
   )
