@@ -29,6 +29,7 @@ const percentDistanceBetweenPoints = (
 const drawChaosGame = (
   canvasContext: CanvasRenderingContext2D,
   numberOfPoints: number,
+  numberOfIterations: number,
 ) => {
   if (numberOfPoints < 3) return
 
@@ -54,7 +55,7 @@ const drawChaosGame = (
 
   const percentTravelDistance = (numberOfPoints - 2) / (numberOfPoints - 1)
 
-  for (let i = 0; i < 500000; i++) {
+  for (let i = 0; i < numberOfIterations; i++) {
     drawPoint(currentPoint)
     const rand = Math.floor(Math.random() * numberOfPoints)
 
@@ -66,13 +67,23 @@ const drawChaosGame = (
   }
 }
 
+interface Form {
+  numberOfCorners: number
+  numberOfIterations: number
+}
+
 export default function ChaosGame() {
-  const [formState, setFormState] = useState<{ numberOfCorners: number }>({
+  const [formState, setFormState] = useState<Form>({
     numberOfCorners: 3,
+    numberOfIterations: 200000,
   })
 
   const handleDraw = (canvasContext: CanvasRenderingContext2D) => {
-    drawChaosGame(canvasContext, formState.numberOfCorners)
+    drawChaosGame(
+      canvasContext,
+      formState.numberOfCorners,
+      formState.numberOfIterations,
+    )
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +110,13 @@ export default function ChaosGame() {
             onChange={handleChange}
           />
           <br />
+          <label htmlFor="numberOfIterations">Number of iterations: </label>
+          <input
+            id="numberOfIterations"
+            type="text"
+            value={formState.numberOfIterations}
+            onChange={handleChange}
+          />
         </form>
       </div>
       <div>
