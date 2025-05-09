@@ -30,6 +30,7 @@ const drawChaosGame = (
   canvasContext: CanvasRenderingContext2D,
   numberOfPoints: number,
   numberOfIterations: number,
+  angleOfRotation: number,
 ) => {
   if (numberOfPoints < 3) return
 
@@ -39,7 +40,7 @@ const drawChaosGame = (
 
   const cornerPoints = []
   const angleBetweenCorners = 360 / numberOfPoints
-  let currentAngle = -90
+  let currentAngle = -90 + angleOfRotation
 
   for (let i = 0; i < numberOfPoints; i++) {
     const newCornerPoint = [
@@ -70,12 +71,14 @@ const drawChaosGame = (
 interface Form {
   numberOfCorners: number
   numberOfIterations: number
+  angleOfRotation: number
 }
 
 export default function ChaosGame() {
   const [formState, setFormState] = useState<Form>({
     numberOfCorners: 3,
     numberOfIterations: 200000,
+    angleOfRotation: 0,
   })
 
   const handleDraw = (canvasContext: CanvasRenderingContext2D) => {
@@ -83,6 +86,7 @@ export default function ChaosGame() {
       canvasContext,
       formState.numberOfCorners,
       formState.numberOfIterations,
+      Number(formState.angleOfRotation),
     )
   }
 
@@ -115,6 +119,18 @@ export default function ChaosGame() {
             id="numberOfIterations"
             type="text"
             value={formState.numberOfIterations}
+            onChange={handleChange}
+          />
+          <br />
+          <label htmlFor="angleOfRotation">
+            Angle of rotation: {formState.angleOfRotation}
+          </label>
+          <input
+            id="angleOfRotation"
+            type="range"
+            min="0"
+            max="359"
+            value={formState.angleOfRotation}
             onChange={handleChange}
           />
         </form>
