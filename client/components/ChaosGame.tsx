@@ -28,21 +28,20 @@ const percentDistanceBetweenPoints = (
 
 const drawChaosGame = (
   canvasContext: CanvasRenderingContext2D,
-  numberOfPoints: number,
-  numberOfIterations: number,
-  angleOfRotation: number,
+  form: ChaosGameForm,
 ) => {
-  if (numberOfPoints < 3) return
+  if (form.numberOfCorners < 3) return
+  if (form.numberOfIterations > 1000000) return
 
   const drawPoint = (point: Point) => {
     canvasContext.fillRect(point[0], point[1], 1, 1)
   }
 
   const cornerPoints = []
-  const angleBetweenCorners = 360 / numberOfPoints
-  let currentAngle = -90 + angleOfRotation
+  const angleBetweenCorners = 360 / form.numberOfCorners
+  let currentAngle = -90 + Number(form.angleOfRotation)
 
-  for (let i = 0; i < numberOfPoints; i++) {
+  for (let i = 0; i < form.numberOfCorners; i++) {
     const newCornerPoint = [
       Math.round(500 + 450 * Math.cos(toRadians(currentAngle))),
       Math.round(500 + 450 * Math.sin(toRadians(currentAngle))),
@@ -54,11 +53,12 @@ const drawChaosGame = (
 
   let currentPoint = getRandomPoint()
 
-  const percentTravelDistance = (numberOfPoints - 2) / (numberOfPoints - 1)
+  const percentTravelDistance =
+    (form.numberOfCorners - 2) / (form.numberOfCorners - 1)
 
-  for (let i = 0; i < numberOfIterations; i++) {
+  for (let i = 0; i < form.numberOfIterations; i++) {
     drawPoint(currentPoint)
-    const rand = Math.floor(Math.random() * numberOfPoints)
+    const rand = Math.floor(Math.random() * form.numberOfCorners)
 
     currentPoint = percentDistanceBetweenPoints(
       currentPoint,
@@ -68,26 +68,21 @@ const drawChaosGame = (
   }
 }
 
-interface Form {
+interface ChaosGameForm {
   numberOfCorners: number
   numberOfIterations: number
   angleOfRotation: number
 }
 
 export default function ChaosGame() {
-  const [formState, setFormState] = useState<Form>({
+  const [formState, setFormState] = useState<ChaosGameForm>({
     numberOfCorners: 3,
     numberOfIterations: 200000,
     angleOfRotation: 0,
   })
 
   const handleDraw = (canvasContext: CanvasRenderingContext2D) => {
-    drawChaosGame(
-      canvasContext,
-      formState.numberOfCorners,
-      formState.numberOfIterations,
-      Number(formState.angleOfRotation),
-    )
+    drawChaosGame(canvasContext, formState)
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +98,7 @@ export default function ChaosGame() {
       <div style={{ margin: '20px' }}>
         <form onSubmit={handleSubmit}>
           <label htmlFor="numberOfCorners">
-            Number of corners: {formState.numberOfCorners}
+            {`Number of corners: ${formState.numberOfCorners} `}
           </label>
           <input
             id="numberOfCorners"
@@ -114,7 +109,7 @@ export default function ChaosGame() {
             onChange={handleChange}
           />
           <br />
-          <label htmlFor="numberOfIterations">Number of iterations: </label>
+          <label htmlFor="numberOfIterations">{`Number of iterations: `}</label>
           <input
             id="numberOfIterations"
             type="text"
@@ -123,7 +118,7 @@ export default function ChaosGame() {
           />
           <br />
           <label htmlFor="angleOfRotation">
-            Angle of rotation: {formState.angleOfRotation}
+            {`Angle of rotation: ${formState.angleOfRotation} `}
           </label>
           <input
             id="angleOfRotation"
